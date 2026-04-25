@@ -3,153 +3,245 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>StudyFlow Escolar</title>
+  <meta name="description" content="Agenda escolar inteligente para organizar tarefas, anotações, cronograma, desempenho, PAVE e ENEM.">
+
   <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
 
-<aside class="sidebar">
-  <div class="brand">
-    <div class="logo">SF</div>
-    <div>
-      <h1>StudyFlow</h1>
-      <span>Agenda inteligente</span>
+  <aside class="sidebar" aria-label="Menu principal">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">SF</div>
+
+      <div>
+        <h1>StudyFlow</h1>
+        <span>Agenda inteligente</span>
+      </div>
+    </div>
+
+    <nav aria-label="Navegação do sistema">
+      <button type="button" class="nav-btn active" data-page="dashboard">🏠 Início</button>
+      <button type="button" class="nav-btn" data-page="agenda">📅 Agenda</button>
+      <button type="button" class="nav-btn" data-page="anotacoes">📝 Anotações</button>
+      <button type="button" class="nav-btn" data-page="cronograma">📚 Cronograma</button>
+      <button type="button" class="nav-btn" data-page="desempenho">📊 Desempenho</button>
+      <button type="button" class="nav-btn" data-page="ia">🤖 IA</button>
+    </nav>
+  </aside>
+
+  <main class="main">
+
+    <header class="topbar">
+      <div>
+        <h2 id="pageTitle">Dashboard</h2>
+        <p>2º ano • PAVE • ENEM</p>
+      </div>
+
+      <button type="button" class="primary" onclick="abrirModalTarefa()">
+        + Nova tarefa
+      </button>
+    </header>
+
+    <section id="dashboard" class="page active" aria-labelledby="dashboardTitle">
+      <div class="hero">
+        <span>Plataforma de estudos</span>
+        <h2 id="dashboardTitle">Organize escola, PAVE e ENEM em um só lugar.</h2>
+        <p>Controle tarefas, anotações, cronograma semanal e desempenho com uma agenda simples e funcional.</p>
+      </div>
+
+      <div class="cards" aria-label="Resumo geral">
+        <article class="card destaque">
+          <span>Pendentes</span>
+          <strong id="totalPendentes">0</strong>
+        </article>
+
+        <article class="card">
+          <span>Anotações</span>
+          <strong id="totalAnotacoes">0</strong>
+        </article>
+
+        <article class="card">
+          <span>Hoje</span>
+          <strong id="tarefasHoje">0</strong>
+        </article>
+
+        <article class="card">
+          <span>Concluídas</span>
+          <strong id="totalConcluidas">0</strong>
+        </article>
+      </div>
+
+      <section class="panel" aria-labelledby="proximasTarefasTitle">
+        <h3 id="proximasTarefasTitle">Próximas tarefas</h3>
+        <div id="listaDashboard" class="list"></div>
+      </section>
+    </section>
+
+    <section id="agenda" class="page" aria-labelledby="agendaTitle">
+      <div class="panel">
+        <div class="section-head">
+          <div>
+            <h3 id="agendaTitle">Agenda Escolar</h3>
+            <p>Cadastre provas, tarefas, trabalhos, revisões e simulados.</p>
+          </div>
+
+          <button type="button" class="primary" onclick="abrirModalTarefa()">
+            + Adicionar
+          </button>
+        </div>
+
+        <div class="filters" aria-label="Filtros da agenda">
+          <select id="filtroCategoria" aria-label="Filtrar por categoria"></select>
+          <select id="filtroStatus" aria-label="Filtrar por status"></select>
+          <select id="filtroMateria" aria-label="Filtrar por matéria"></select>
+          <input id="buscaTarefa" type="search" placeholder="Buscar..." aria-label="Buscar tarefa">
+        </div>
+
+        <div id="listaTarefas" class="list"></div>
+      </div>
+    </section>
+
+    <section id="anotacoes" class="page" aria-labelledby="anotacoesTitle">
+      <div class="panel">
+        <h3 id="anotacoesTitle">Anotações</h3>
+
+        <form id="formNota" autocomplete="off">
+          <input id="notaTitulo" type="text" placeholder="Título" aria-label="Título da anotação" required>
+          <textarea id="notaTexto" placeholder="Digite sua anotação..." aria-label="Texto da anotação" required></textarea>
+
+          <button type="submit" class="primary">
+            Salvar
+          </button>
+        </form>
+
+        <div id="listaNotas" class="notes"></div>
+      </div>
+    </section>
+
+    <section id="cronograma" class="page" aria-labelledby="cronogramaTitle">
+      <div class="panel">
+        <h3 id="cronogramaTitle">Cronograma</h3>
+
+        <div class="schedule">
+          <div class="schedule-head">Dia</div>
+          <div class="schedule-head">Escola</div>
+          <div class="schedule-head">PAVE</div>
+          <div class="schedule-head">ENEM</div>
+
+          <div>Segunda</div><div>Matemática</div><div>Português</div><div>Redação</div>
+          <div>Terça</div><div>Química</div><div>História</div><div>Matemática</div>
+          <div>Quarta</div><div>Biologia</div><div>Geografia</div><div>Linguagens</div>
+          <div>Quinta</div><div>Física</div><div>Matemática</div><div>Natureza</div>
+          <div>Sexta</div><div>Projeto Integrador</div><div>Redação</div><div>Humanas</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="desempenho" class="page" aria-labelledby="desempenhoTitle">
+      <div class="panel">
+        <h3 id="desempenhoTitle">Desempenho</h3>
+
+        <div class="cards">
+          <article class="card">
+            <span>Escola</span>
+            <strong id="totalEscola">0</strong>
+          </article>
+
+          <article class="card">
+            <span>PAVE</span>
+            <strong id="totalPave">0</strong>
+          </article>
+
+          <article class="card">
+            <span>ENEM</span>
+            <strong id="totalEnem">0</strong>
+          </article>
+
+          <article class="card destaque">
+            <span>Progresso</span>
+            <strong id="percentualProgresso">0%</strong>
+          </article>
+        </div>
+
+        <div class="progress-bar" aria-label="Barra de progresso">
+          <div id="barraProgresso"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="ia" class="page" aria-labelledby="iaTitle">
+      <div class="panel">
+        <h3 id="iaTitle">Assistente IA</h3>
+        <p class="muted">Área preparada para futura integração com IA.</p>
+
+        <textarea id="promptIA" placeholder="Digite sua pergunta..." aria-label="Pergunta para IA"></textarea>
+
+        <button type="button" class="primary" onclick="perguntarIA()">
+          Perguntar
+        </button>
+
+        <div id="respostaIA" class="ai-response"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <div id="modalTarefa" class="modal" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTarefaTitle">
+
+      <div class="section-head">
+        <h3 id="modalTarefaTitle">Nova tarefa</h3>
+        <button type="button" class="ghost" onclick="fecharModalTarefa()" aria-label="Fechar modal">
+          ✕
+        </button>
+      </div>
+
+      <form id="formTarefa" autocomplete="off">
+        <input type="hidden" id="tarefaId">
+
+        <input id="tarefaTitulo" type="text" placeholder="Título" aria-label="Título da tarefa" required>
+
+        <select id="tarefaMateria" aria-label="Matéria da tarefa"></select>
+
+        <select id="tarefaCategoria" aria-label="Categoria da tarefa">
+          <option>Escola</option>
+          <option>PAVE</option>
+          <option>ENEM</option>
+        </select>
+
+        <select id="tarefaTipo" aria-label="Tipo da tarefa">
+          <option>Tarefa</option>
+          <option>Prova</option>
+          <option>Trabalho</option>
+          <option>Revisão</option>
+          <option>Simulado</option>
+        </select>
+
+        <select id="tarefaStatus" aria-label="Status da tarefa">
+          <option>Pendente</option>
+          <option>Fazendo</option>
+          <option>Concluído</option>
+        </select>
+
+        <input id="tarefaData" type="date" aria-label="Data da tarefa" required>
+
+        <textarea id="tarefaDescricao" placeholder="Descrição" aria-label="Descrição da tarefa"></textarea>
+
+        <button type="submit" class="primary">
+          Salvar tarefa
+        </button>
+
+        <button type="button" class="ghost" onclick="fecharModalTarefa()">
+          Cancelar
+        </button>
+      </form>
+
     </div>
   </div>
 
-  <nav>
-    <button class="nav-btn active" data-page="dashboard">🏠 Início</button>
-    <button class="nav-btn" data-page="agenda">📅 Agenda</button>
-    <button class="nav-btn" data-page="anotacoes">📝 Anotações</button>
-    <button class="nav-btn" data-page="cronograma">📚 Cronograma</button>
-    <button class="nav-btn" data-page="desempenho">📊 Desempenho</button>
-    <button class="nav-btn" data-page="ia">🤖 IA</button>
-  </nav>
-</aside>
-
-<main class="main">
-
-<header class="topbar">
-  <div>
-    <h2 id="pageTitle">Dashboard</h2>
-    <p>2º ano • PAVE • ENEM</p>
-  </div>
-  <button class="primary" onclick="abrirModalTarefa()">+ Nova tarefa</button>
-</header>
-
-<!-- DASHBOARD -->
-<section id="dashboard" class="page active">
-
-<div class="cards">
-  <div class="card destaque">
-    <span>Pendentes</span>
-    <strong id="totalPendentes">0</strong>
-  </div>
-  <div class="card">
-    <span>Anotações</span>
-    <strong id="totalAnotacoes">0</strong>
-  </div>
-  <div class="card">
-    <span>Hoje</span>
-    <strong id="tarefasHoje">0</strong>
-  </div>
-  <div class="card">
-    <span>Concluídas</span>
-    <strong id="totalConcluidas">0</strong>
-  </div>
-</div>
-
-<div class="panel">
-  <h3>Próximas tarefas</h3>
-  <div id="listaDashboard" class="list"></div>
-</div>
-
-</section>
-
-<!-- AGENDA -->
-<section id="agenda" class="page">
-<div class="panel">
-
-<h3>Agenda Escolar</h3>
-
-<div class="filters">
-  <select id="filtroCategoria"></select>
-  <select id="filtroStatus"></select>
-  <select id="filtroMateria"></select>
-  <input id="buscaTarefa" placeholder="Buscar...">
-</div>
-
-<div id="listaTarefas" class="list"></div>
-
-</div>
-</section>
-
-<!-- ANOTAÇÕES -->
-<section id="anotacoes" class="page">
-<div class="panel">
-
-<h3>Anotações</h3>
-
-<form id="formNota">
-  <input id="notaTitulo" placeholder="Título">
-  <textarea id="notaTexto" placeholder="Digite..."></textarea>
-  <button class="primary">Salvar</button>
-</form>
-
-<div id="listaNotas"></div>
-
-</div>
-</section>
-
-<!-- CRONOGRAMA -->
-<section id="cronograma" class="page">
-<div class="panel">
-<h3>Cronograma</h3>
-<p>Seu cronograma aparece aqui.</p>
-</div>
-</section>
-
-<!-- DESEMPENHO -->
-<section id="desempenho" class="page">
-<div class="panel">
-<h3>Desempenho</h3>
-<p>Acompanhe seu progresso.</p>
-</div>
-</section>
-
-<!-- IA -->
-<section id="ia" class="page">
-<div class="panel">
-<h3>Assistente IA</h3>
-
-<textarea id="promptIA"></textarea>
-<button class="primary" onclick="perguntarIA()">Perguntar</button>
-
-<div id="respostaIA"></div>
-
-</div>
-</section>
-
-</main>
-
-<!-- MODAL -->
-<div id="modalTarefa" class="modal">
-<div class="modal-card">
-
-<form id="formTarefa">
-
-<input id="tarefaTitulo" placeholder="Título">
-<input type="date" id="tarefaData">
-
-<button class="primary">Salvar</button>
-
-</form>
-
-</div>
-</div>
-
-<script src="app.js"></script>
-
+  <script src="app.js"></script>
 </body>
 </html>
