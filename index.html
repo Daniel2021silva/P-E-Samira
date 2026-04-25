@@ -9,245 +9,147 @@
 
 <body>
 
-<!-- LOGIN FIREBASE -->
-<div id="loginBox" class="login-box">
-  <div class="login-card">
+<aside class="sidebar">
+  <div class="brand">
     <div class="logo">SF</div>
-    <h1>StudyFlow</h1>
-    <p>Entre para salvar seus estudos na nuvem</p>
-
-    <input id="email" type="email" placeholder="Email">
-    <input id="senha" type="password" placeholder="Senha">
-
-    <button type="button" class="primary" onclick="entrar()">Entrar</button>
-    <button type="button" class="ghost" onclick="cadastrar()">Criar conta</button>
-  </div>
-</div>
-
-<!-- APP -->
-<div id="appBox" style="display:none; width:100%;">
-
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="brand">
-      <div class="logo">SF</div>
-      <div>
-        <h1>StudyFlow</h1>
-        <span>Agenda inteligente</span>
-      </div>
-    </div>
-
-    <nav>
-      <button type="button" class="nav-btn active" data-page="dashboard">🏠 Início</button>
-      <button type="button" class="nav-btn" data-page="agenda">📅 Agenda</button>
-      <button type="button" class="nav-btn" data-page="anotacoes">📝 Anotações</button>
-      <button type="button" class="nav-btn" data-page="cronograma">📚 Cronograma</button>
-      <button type="button" class="nav-btn" data-page="desempenho">📊 Desempenho</button>
-      <button type="button" class="nav-btn" data-page="ia">🤖 IA</button>
-    </nav>
-
-    <button type="button" class="ghost sair-btn" onclick="sair()">Sair</button>
-  </aside>
-
-  <!-- MAIN -->
-  <main class="main">
-
-    <header class="topbar">
-      <div>
-        <h2 id="pageTitle">Dashboard</h2>
-        <p>2º ano • PAVE • ENEM</p>
-      </div>
-      <button type="button" class="primary" onclick="abrirModalTarefa()">+ Nova tarefa</button>
-    </header>
-
-    <!-- DASHBOARD -->
-    <section id="dashboard" class="page active">
-      <div class="cards">
-        <div class="card destaque">
-          <span>Pendentes</span>
-          <strong id="totalPendentes">0</strong>
-        </div>
-        <div class="card">
-          <span>Anotações</span>
-          <strong id="totalAnotacoes">0</strong>
-        </div>
-        <div class="card">
-          <span>Hoje</span>
-          <strong id="tarefasHoje">0</strong>
-        </div>
-        <div class="card">
-          <span>Concluídas</span>
-          <strong id="totalConcluidas">0</strong>
-        </div>
-      </div>
-
-      <div class="panel">
-        <h3>Próximas tarefas</h3>
-        <div id="listaDashboard" class="list"></div>
-      </div>
-    </section>
-
-    <!-- AGENDA -->
-    <section id="agenda" class="page">
-      <div class="panel">
-        <h3>Agenda Escolar</h3>
-
-        <div class="filters">
-          <select id="filtroCategoria" onchange="renderTudo()">
-            <option value="">Todas</option>
-            <option>Escola</option>
-            <option>PAVE</option>
-            <option>ENEM</option>
-          </select>
-
-          <select id="filtroStatus" onchange="renderTudo()">
-            <option value="">Status</option>
-            <option>Pendente</option>
-            <option>Fazendo</option>
-            <option>Concluído</option>
-          </select>
-
-          <select id="filtroMateria" onchange="renderTudo()">
-            <option value="">Matéria</option>
-          </select>
-
-          <input id="buscaTarefa" placeholder="Buscar..." oninput="renderTudo()">
-        </div>
-
-        <div id="listaTarefas" class="list"></div>
-      </div>
-    </section>
-
-    <!-- ANOTAÇÕES -->
-    <section id="anotacoes" class="page">
-      <div class="panel">
-        <h3>Anotações</h3>
-
-        <form id="formNota" class="form-grid">
-          <input id="notaTitulo" placeholder="Título" required>
-          <select id="notaMateria" required></select>
-
-          <select id="notaCategoria">
-            <option>Escola</option>
-            <option>PAVE</option>
-            <option>ENEM</option>
-          </select>
-
-          <textarea id="notaTexto" placeholder="Digite..." required></textarea>
-
-          <button type="submit" class="primary">Salvar</button>
-        </form>
-
-        <div id="listaNotas" class="notes"></div>
-      </div>
-    </section>
-
-    <!-- CRONOGRAMA -->
-    <section id="cronograma" class="page">
-      <div class="panel">
-        <h3>Cronograma</h3>
-
-        <div class="schedule">
-          <div class="schedule-head">Dia</div>
-          <div class="schedule-head">Escola</div>
-          <div class="schedule-head">PAVE</div>
-          <div class="schedule-head">ENEM</div>
-
-          <div>Seg</div><div>Matemática</div><div>Português</div><div>Redação</div>
-          <div>Ter</div><div>Química</div><div>História</div><div>Matemática</div>
-          <div>Qua</div><div>Biologia</div><div>Geografia</div><div>Linguagens</div>
-          <div>Qui</div><div>Física</div><div>Matemática</div><div>Natureza</div>
-          <div>Sex</div><div>Projeto Integrador</div><div>Redação</div><div>Humanas</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- DESEMPENHO -->
-    <section id="desempenho" class="page">
-      <div class="panel">
-        <h3>Desempenho</h3>
-
-        <div class="cards">
-          <div class="card">
-            <span>Escola</span>
-            <strong id="totalEscola">0</strong>
-          </div>
-          <div class="card">
-            <span>PAVE</span>
-            <strong id="totalPave">0</strong>
-          </div>
-          <div class="card">
-            <span>ENEM</span>
-            <strong id="totalEnem">0</strong>
-          </div>
-          <div class="card destaque">
-            <span>Progresso</span>
-            <strong id="percentualProgresso">0%</strong>
-          </div>
-        </div>
-
-        <div class="progress-bar">
-          <div id="barraProgresso"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- IA -->
-    <section id="ia" class="page">
-      <div class="panel">
-        <h3>Assistente IA</h3>
-
-        <textarea id="promptIA" placeholder="Digite sua pergunta..."></textarea>
-        <button type="button" class="primary" onclick="perguntarIA()">Perguntar</button>
-
-        <div id="respostaIA"></div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- MODAL -->
-  <div id="modalTarefa" class="modal">
-    <div class="modal-card">
-      <form id="formTarefa">
-        <input type="hidden" id="tarefaId">
-
-        <input id="tarefaTitulo" placeholder="Título" required>
-        <select id="tarefaMateria"></select>
-
-        <select id="tarefaCategoria">
-          <option>Escola</option>
-          <option>PAVE</option>
-          <option>ENEM</option>
-        </select>
-
-        <select id="tarefaTipo">
-          <option>Tarefa</option>
-          <option>Prova</option>
-          <option>Trabalho</option>
-          <option>Revisão</option>
-          <option>Simulado</option>
-        </select>
-
-        <select id="tarefaStatus">
-          <option>Pendente</option>
-          <option>Fazendo</option>
-          <option>Concluído</option>
-        </select>
-
-        <input type="date" id="tarefaData" required>
-
-        <textarea id="tarefaDescricao" placeholder="Descrição"></textarea>
-
-        <button type="submit" class="primary">Salvar</button>
-        <button type="button" class="ghost" onclick="fecharModalTarefa()">Cancelar</button>
-      </form>
+    <div>
+      <h1>StudyFlow</h1>
+      <span>Agenda inteligente</span>
     </div>
   </div>
 
+  <nav>
+    <button class="nav-btn active" data-page="dashboard">🏠 Início</button>
+    <button class="nav-btn" data-page="agenda">📅 Agenda</button>
+    <button class="nav-btn" data-page="anotacoes">📝 Anotações</button>
+    <button class="nav-btn" data-page="cronograma">📚 Cronograma</button>
+    <button class="nav-btn" data-page="desempenho">📊 Desempenho</button>
+    <button class="nav-btn" data-page="ia">🤖 IA</button>
+  </nav>
+</aside>
+
+<main class="main">
+
+<header class="topbar">
+  <div>
+    <h2 id="pageTitle">Dashboard</h2>
+    <p>2º ano • PAVE • ENEM</p>
+  </div>
+  <button class="primary" onclick="abrirModalTarefa()">+ Nova tarefa</button>
+</header>
+
+<!-- DASHBOARD -->
+<section id="dashboard" class="page active">
+
+<div class="cards">
+  <div class="card destaque">
+    <span>Pendentes</span>
+    <strong id="totalPendentes">0</strong>
+  </div>
+  <div class="card">
+    <span>Anotações</span>
+    <strong id="totalAnotacoes">0</strong>
+  </div>
+  <div class="card">
+    <span>Hoje</span>
+    <strong id="tarefasHoje">0</strong>
+  </div>
+  <div class="card">
+    <span>Concluídas</span>
+    <strong id="totalConcluidas">0</strong>
+  </div>
 </div>
 
-<script type="module" src="app.js"></script>
+<div class="panel">
+  <h3>Próximas tarefas</h3>
+  <div id="listaDashboard" class="list"></div>
+</div>
+
+</section>
+
+<!-- AGENDA -->
+<section id="agenda" class="page">
+<div class="panel">
+
+<h3>Agenda Escolar</h3>
+
+<div class="filters">
+  <select id="filtroCategoria"></select>
+  <select id="filtroStatus"></select>
+  <select id="filtroMateria"></select>
+  <input id="buscaTarefa" placeholder="Buscar...">
+</div>
+
+<div id="listaTarefas" class="list"></div>
+
+</div>
+</section>
+
+<!-- ANOTAÇÕES -->
+<section id="anotacoes" class="page">
+<div class="panel">
+
+<h3>Anotações</h3>
+
+<form id="formNota">
+  <input id="notaTitulo" placeholder="Título">
+  <textarea id="notaTexto" placeholder="Digite..."></textarea>
+  <button class="primary">Salvar</button>
+</form>
+
+<div id="listaNotas"></div>
+
+</div>
+</section>
+
+<!-- CRONOGRAMA -->
+<section id="cronograma" class="page">
+<div class="panel">
+<h3>Cronograma</h3>
+<p>Seu cronograma aparece aqui.</p>
+</div>
+</section>
+
+<!-- DESEMPENHO -->
+<section id="desempenho" class="page">
+<div class="panel">
+<h3>Desempenho</h3>
+<p>Acompanhe seu progresso.</p>
+</div>
+</section>
+
+<!-- IA -->
+<section id="ia" class="page">
+<div class="panel">
+<h3>Assistente IA</h3>
+
+<textarea id="promptIA"></textarea>
+<button class="primary" onclick="perguntarIA()">Perguntar</button>
+
+<div id="respostaIA"></div>
+
+</div>
+</section>
+
+</main>
+
+<!-- MODAL -->
+<div id="modalTarefa" class="modal">
+<div class="modal-card">
+
+<form id="formTarefa">
+
+<input id="tarefaTitulo" placeholder="Título">
+<input type="date" id="tarefaData">
+
+<button class="primary">Salvar</button>
+
+</form>
+
+</div>
+</div>
+
+<script src="app.js"></script>
 
 </body>
 </html>
