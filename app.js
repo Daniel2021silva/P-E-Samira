@@ -17,133 +17,15 @@ const materias = [
 const STORAGE_TAREFAS = "studyflow_tarefas_local";
 const STORAGE_NOTAS = "studyflow_notas_local";
 
-let tarefas = [];
-let notas = [];
-
-let firebaseAtivo = false;
-let FB = null;
+let tarefas = JSON.parse(localStorage.getItem(STORAGE_TAREFAS)) || [];
+let notas = JSON.parse(localStorage.getItem(STORAGE_NOTAS)) || [];
 
 const $ = (id) => document.getElementById(id);
 
-/* =========================
-   LOCAL STORAGE
-========================= */
-
-function carregarLocal() {
-  try {
-    tarefas = JSON.parse(localStorage.getItem(STORAGE_TAREFAS)) || [];
-    notas = JSON.parse(localStorage.getItem(STORAGE_NOTAS)) || [];
-  } catch (erro) {
-    console.warn("Erro ao carregar localStorage:", erro);
-    tarefas = [];
-    notas = [];
-  }
-}
-
 function salvarLocal() {
-  try {
-    localStorage.setItem(STORAGE_TAREFAS, JSON.stringify(tarefas));
-    localStorage.setItem(STORAGE_NOTAS, JSON.stringify(notas));
-  } catch (erro) {
-    console.warn("Erro ao salvar localStorage:", erro);
-  }
+  localStorage.setItem(STORAGE_TAREFAS, JSON.stringify(tarefas));
+  localStorage.setItem(STORAGE_NOTAS, JSON.stringify(notas));
 }
-
-/* =========================
-   FIREBASE REALTIME DATABASE
-========================= */
-
-async function iniciarFirebase() {
-  try {
-    FB = await import("./firebase.js");
-    firebaseAtivo = !!FB.db;
-
-    if (firebaseAtivo) {
-      console.log("Firebase Realtime Database conectado.");
-    }
-  } catch (erro) {
-    firebaseAtivo = false;
-    console.warn("Firebase não conectado. O app continuará usando localStorage.", erro);
-  }
-}
-
-async function carregarFirebase() {
-  if (!firebaseAtivo) return false;
-
-  try {
-    const snapTarefas = await FB.get(FB.ref(FB.db, "tarefas"));
-    const snapNotas = await FB.get(FB.ref(FB.db, "notas"));
-
-    tarefas = snapTarefas.exists()
-      ? Object.values(snapTarefas.val())
-      : tarefas;
-
-    notas = snapNotas.exists()
-      ? Object.values(snapNotas.val())
-      : notas;
-
-    tarefas = Array.isArray(tarefas) ? tarefas : [];
-    notas = Array.isArray(notas) ? notas : [];
-
-    salvarLocal();
-    return true;
-  } catch (erro) {
-    console.warn("Erro ao carregar dados do Firebase. Usando localStorage.", erro);
-    return false;
-  }
-}
-
-async function salvarTarefaNuvem(tarefa) {
-  salvarLocal();
-
-  if (!firebaseAtivo) return;
-
-  try {
-    await FB.set(FB.ref(FB.db, `tarefas/${String(tarefa.id)}`), tarefa);
-  } catch (erro) {
-    console.warn("Não foi possível salvar tarefa no Firebase.", erro);
-  }
-}
-
-async function salvarNotaNuvem(nota) {
-  salvarLocal();
-
-  if (!firebaseAtivo) return;
-
-  try {
-    await FB.set(FB.ref(FB.db, `notas/${String(nota.id)}`), nota);
-  } catch (erro) {
-    console.warn("Não foi possível salvar anotação no Firebase.", erro);
-  }
-}
-
-async function excluirTarefaNuvem(id) {
-  salvarLocal();
-
-  if (!firebaseAtivo) return;
-
-  try {
-    await FB.remove(FB.ref(FB.db, `tarefas/${String(id)}`));
-  } catch (erro) {
-    console.warn("Não foi possível excluir tarefa no Firebase.", erro);
-  }
-}
-
-async function excluirNotaNuvem(id) {
-  salvarLocal();
-
-  if (!firebaseAtivo) return;
-
-  try {
-    await FB.remove(FB.ref(FB.db, `notas/${String(id)}`));
-  } catch (erro) {
-    console.warn("Não foi possível excluir anotação no Firebase.", erro);
-  }
-}
-
-/* =========================
-   CONFIGURAÇÃO INICIAL
-========================= */
 
 function preencherMaterias() {
   ["tarefaMateria", "filtroMateria"].forEach(id => {
@@ -155,7 +37,7 @@ function preencherMaterias() {
       : "";
 
     materias.forEach(materia => {
-      html += `<option value="${limpar(materia)}">${limpar(materia)}</option>`;
+      html += `<option value="${materia}">${materia}</option>`;
     });
 
     select.innerHTML = html;
@@ -163,40 +45,24 @@ function preencherMaterias() {
 }
 
 function preencherFiltros() {
-  const filtroCategoria = $("filtroCategoria");
-  const filtroStatus = $("filtroStatus");
+  $("filtroCategoria").innerHTML = `
+    <option value="">Todas as categorias</option>
+    <option>Escola</option>
+    <option>PAVE</option>
+    <option>ENEM</option>
+  `;
 
-  if (filtroCategoria) {
-    filtroCategoria.innerHTML = `
-      <option value="">Todas as categorias</option>
-      <option>Escola</option>
-      <option>PAVE</option>
-      <option>ENEM</option>
-    `;
-  }
-
-  if (filtroStatus) {
-    filtroStatus.innerHTML = `
-      <option value="">Todos os status</option>
-      <option>Pendente</option>
-      <option>Fazendo</option>
-      <option>Concluído</option>
-    `;
-  }
+  $("filtroStatus").innerHTML = `
+    <option value="">Todos os status</option>
+    <option>Pendente</option>
+    <option>Fazendo</option>
+    <option>Concluído</option>
+  `;
 }
 
-/* =========================
-   NAVEGAÇÃO
-========================= */
-
 function mudarPagina(pagina) {
-  document.querySelectorAll(".page").forEach(page => {
-    page.classList.remove("active");
-  });
-
-  document.querySelectorAll(".nav-btn").forEach(btn => {
-    btn.classList.remove("active");
-  });
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
 
   const secao = $(pagina);
   const botao = document.querySelector(`[data-page="${pagina}"]`);
@@ -213,36 +79,32 @@ function mudarPagina(pagina) {
     ia: "Assistente IA"
   };
 
-  if ($("pageTitle")) {
-    $("pageTitle").innerText = titulos[pagina] || "StudyFlow";
-  }
+  $("pageTitle").innerText = titulos[pagina] || "StudyFlow";
 }
 
-/* =========================
-   MODAL DE TAREFA
-========================= */
+document.querySelectorAll(".nav-btn").forEach(btn => {
+  btn.addEventListener("click", () => mudarPagina(btn.dataset.page));
+});
 
 function abrirModalTarefa(id = null) {
   const modal = $("modalTarefa");
   const form = $("formTarefa");
 
-  if (!modal || !form) return;
-
   modal.classList.add("active");
   modal.setAttribute("aria-hidden", "false");
 
-  if (id) {
-    const tarefa = tarefas.find(t => String(t.id) === String(id));
+  if (id !== null) {
+    const tarefa = tarefas.find(t => Number(t.id) === Number(id));
     if (!tarefa) return;
 
     $("modalTarefaTitle").innerText = "Editar tarefa";
     $("tarefaId").value = tarefa.id;
-    $("tarefaTitulo").value = tarefa.titulo || "";
-    $("tarefaMateria").value = tarefa.materia || "";
-    $("tarefaCategoria").value = tarefa.categoria || "Escola";
-    $("tarefaTipo").value = tarefa.tipo || "Tarefa";
-    $("tarefaStatus").value = tarefa.status || "Pendente";
-    $("tarefaData").value = tarefa.data || "";
+    $("tarefaTitulo").value = tarefa.titulo;
+    $("tarefaMateria").value = tarefa.materia;
+    $("tarefaCategoria").value = tarefa.categoria;
+    $("tarefaTipo").value = tarefa.tipo;
+    $("tarefaStatus").value = tarefa.status;
+    $("tarefaData").value = tarefa.data;
     $("tarefaDescricao").value = tarefa.descricao || "";
   } else {
     $("modalTarefaTitle").innerText = "Nova tarefa";
@@ -253,25 +115,76 @@ function abrirModalTarefa(id = null) {
 }
 
 function fecharModalTarefa() {
-  const modal = $("modalTarefa");
-
-  if (modal) {
-    modal.classList.remove("active");
-    modal.setAttribute("aria-hidden", "true");
-  }
-
-  if ($("formTarefa")) {
-    $("formTarefa").reset();
-  }
+  $("modalTarefa").classList.remove("active");
+  $("modalTarefa").setAttribute("aria-hidden", "true");
+  $("formTarefa").reset();
 }
 
-/* =========================
-   AÇÕES DE TAREFAS
-========================= */
+$("modalTarefa").addEventListener("click", (event) => {
+  if (event.target.id === "modalTarefa") {
+    fecharModalTarefa();
+  }
+});
 
-async function alternarStatus(id) {
+$("formTarefa").addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const id = $("tarefaId").value;
+
+  const tarefa = {
+    id: id ? Number(id) : Date.now(),
+    titulo: $("tarefaTitulo").value.trim(),
+    materia: $("tarefaMateria").value,
+    categoria: $("tarefaCategoria").value,
+    tipo: $("tarefaTipo").value,
+    status: $("tarefaStatus").value,
+    data: $("tarefaData").value,
+    descricao: $("tarefaDescricao").value.trim(),
+    criadoEm: new Date().toISOString()
+  };
+
+  if (!tarefa.titulo || !tarefa.data) {
+    alert("Preencha o título e a data da tarefa.");
+    return;
+  }
+
+  if (id) {
+    tarefas = tarefas.map(item => Number(item.id) === Number(id) ? tarefa : item);
+  } else {
+    tarefas.push(tarefa);
+  }
+
+  salvarLocal();
+  fecharModalTarefa();
+  renderTudo();
+});
+
+$("formNota").addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const titulo = $("notaTitulo").value.trim();
+  const texto = $("notaTexto").value.trim();
+
+  if (!titulo || !texto) {
+    alert("Preencha o título e a anotação.");
+    return;
+  }
+
+  notas.unshift({
+    id: Date.now(),
+    titulo,
+    texto,
+    data: new Date().toLocaleDateString("pt-BR")
+  });
+
+  salvarLocal();
+  $("formNota").reset();
+  renderTudo();
+});
+
+function alternarStatus(id) {
   tarefas = tarefas.map(tarefa => {
-    if (String(tarefa.id) !== String(id)) return tarefa;
+    if (Number(tarefa.id) !== Number(id)) return tarefa;
 
     let novoStatus = "Pendente";
 
@@ -279,53 +192,37 @@ async function alternarStatus(id) {
       novoStatus = "Fazendo";
     } else if (tarefa.status === "Fazendo") {
       novoStatus = "Concluído";
-    } else if (tarefa.status === "Concluído") {
+    } else {
       novoStatus = "Pendente";
     }
 
     return {
       ...tarefa,
-      status: novoStatus,
-      atualizadoEm: new Date().toISOString()
+      status: novoStatus
     };
   });
 
-  const tarefaAtualizada = tarefas.find(t => String(t.id) === String(id));
-
-  if (tarefaAtualizada) {
-    await salvarTarefaNuvem(tarefaAtualizada);
-  }
-
+  salvarLocal();
   renderTudo();
 }
 
-async function excluirTarefa(id) {
+function excluirTarefa(id) {
   if (!confirm("Deseja excluir esta tarefa?")) return;
 
-  tarefas = tarefas.filter(tarefa => String(tarefa.id) !== String(id));
+  tarefas = tarefas.filter(tarefa => Number(tarefa.id) !== Number(id));
 
   salvarLocal();
-  await excluirTarefaNuvem(id);
   renderTudo();
 }
 
-/* =========================
-   AÇÕES DE ANOTAÇÕES
-========================= */
-
-async function excluirNota(id) {
+function excluirNota(id) {
   if (!confirm("Deseja excluir esta anotação?")) return;
 
-  notas = notas.filter(nota => String(nota.id) !== String(id));
+  notas = notas.filter(nota => Number(nota.id) !== Number(id));
 
   salvarLocal();
-  await excluirNotaNuvem(id);
   renderTudo();
 }
-
-/* =========================
-   RENDERIZAÇÃO DE TAREFAS
-========================= */
 
 function renderTarefas() {
   const listaTarefas = $("listaTarefas");
@@ -333,55 +230,41 @@ function renderTarefas() {
 
   let lista = [...tarefas];
 
-  const categoria = $("filtroCategoria")?.value || "";
-  const status = $("filtroStatus")?.value || "";
-  const materia = $("filtroMateria")?.value || "";
-  const busca = $("buscaTarefa")?.value.toLowerCase() || "";
+  const categoria = $("filtroCategoria").value;
+  const status = $("filtroStatus").value;
+  const materia = $("filtroMateria").value;
+  const busca = $("buscaTarefa").value.toLowerCase();
 
-  if (categoria) {
-    lista = lista.filter(tarefa => tarefa.categoria === categoria);
-  }
-
-  if (status) {
-    lista = lista.filter(tarefa => tarefa.status === status);
-  }
-
-  if (materia) {
-    lista = lista.filter(tarefa => tarefa.materia === materia);
-  }
+  if (categoria) lista = lista.filter(t => t.categoria === categoria);
+  if (status) lista = lista.filter(t => t.status === status);
+  if (materia) lista = lista.filter(t => t.materia === materia);
 
   if (busca) {
-    lista = lista.filter(tarefa =>
-      String(tarefa.titulo || "").toLowerCase().includes(busca) ||
-      String(tarefa.materia || "").toLowerCase().includes(busca) ||
-      String(tarefa.categoria || "").toLowerCase().includes(busca) ||
-      String(tarefa.descricao || "").toLowerCase().includes(busca)
+    lista = lista.filter(t =>
+      t.titulo.toLowerCase().includes(busca) ||
+      t.materia.toLowerCase().includes(busca) ||
+      t.categoria.toLowerCase().includes(busca) ||
+      (t.descricao || "").toLowerCase().includes(busca)
     );
   }
 
-  lista.sort((a, b) => new Date(a.data || "2999-12-31") - new Date(b.data || "2999-12-31"));
+  lista.sort((a, b) => new Date(a.data) - new Date(b.data));
 
-  if (listaTarefas) {
-    listaTarefas.innerHTML = lista.length
-      ? lista.map(cardTarefa).join("")
-      : `<div class="item">Nenhuma tarefa encontrada.</div>`;
-  }
+  listaTarefas.innerHTML = lista.length
+    ? lista.map(cardTarefa).join("")
+    : `<div class="item">Nenhuma tarefa encontrada.</div>`;
 
   const proximas = tarefas
-    .filter(tarefa => tarefa.status !== "Concluído")
-    .sort((a, b) => new Date(a.data || "2999-12-31") - new Date(b.data || "2999-12-31"))
+    .filter(t => t.status !== "Concluído")
+    .sort((a, b) => new Date(a.data) - new Date(b.data))
     .slice(0, 5);
 
-  if (listaDashboard) {
-    listaDashboard.innerHTML = proximas.length
-      ? proximas.map(cardTarefa).join("")
-      : `<div class="item">Nenhuma tarefa pendente.</div>`;
-  }
+  listaDashboard.innerHTML = proximas.length
+    ? proximas.map(cardTarefa).join("")
+    : `<div class="item">Nenhuma tarefa pendente.</div>`;
 }
 
 function cardTarefa(tarefa) {
-  const idJs = JSON.stringify(String(tarefa.id));
-
   return `
     <article class="item">
       <div>
@@ -398,94 +281,50 @@ function cardTarefa(tarefa) {
       </div>
 
       <div class="actions">
-        <button type="button" class="done" onclick="alternarStatus(${idJs})">Status</button>
-        <button type="button" class="edit" onclick="abrirModalTarefa(${idJs})">Editar</button>
-        <button type="button" class="delete" onclick="excluirTarefa(${idJs})">Excluir</button>
+        <button type="button" class="done" onclick="alternarStatus(${tarefa.id})">Status</button>
+        <button type="button" class="edit" onclick="abrirModalTarefa(${tarefa.id})">Editar</button>
+        <button type="button" class="delete" onclick="excluirTarefa(${tarefa.id})">Excluir</button>
       </div>
     </article>
   `;
 }
 
-/* =========================
-   RENDERIZAÇÃO DE ANOTAÇÕES
-========================= */
-
 function renderNotas() {
   const listaNotas = $("listaNotas");
-  if (!listaNotas) return;
-
-  notas.sort((a, b) => new Date(b.criadoEm || 0) - new Date(a.criadoEm || 0));
 
   listaNotas.innerHTML = notas.length
-    ? notas.map(nota => {
-      const idJs = JSON.stringify(String(nota.id));
-
-      return `
-        <article class="note">
-          <h4>${limpar(nota.titulo)}</h4>
-
-          <div class="badges">
-            <span class="badge">${limpar(nota.data)}</span>
-          </div>
-
-          <p>${limpar(nota.texto)}</p>
-
-          <button type="button" class="delete" onclick="excluirNota(${idJs})">
-            Excluir
-          </button>
-        </article>
-      `;
-    }).join("")
+    ? notas.map(nota => `
+      <article class="note">
+        <h4>${limpar(nota.titulo)}</h4>
+        <div class="badges">
+          <span class="badge">${limpar(nota.data)}</span>
+        </div>
+        <p>${limpar(nota.texto)}</p>
+        <button type="button" class="delete" onclick="excluirNota(${nota.id})">Excluir</button>
+      </article>
+    `).join("")
     : `<div class="item">Nenhuma anotação salva.</div>`;
 }
 
-/* =========================
-   RESUMO E DESEMPENHO
-========================= */
-
 function renderResumo() {
-  const hoje = dataHojeLocal();
+  const hoje = new Date().toISOString().slice(0, 10);
 
-  const pendentes = tarefas.filter(tarefa => tarefa.status !== "Concluído").length;
-  const concluidas = tarefas.filter(tarefa => tarefa.status === "Concluído").length;
+  const pendentes = tarefas.filter(t => t.status !== "Concluído").length;
+  const concluidas = tarefas.filter(t => t.status === "Concluído").length;
   const total = tarefas.length;
   const progresso = total ? Math.round((concluidas / total) * 100) : 0;
 
-  if ($("totalPendentes")) {
-    $("totalPendentes").innerText = pendentes;
-  }
+  $("totalPendentes").innerText = pendentes;
+  $("totalAnotacoes").innerText = notas.length;
+  $("tarefasHoje").innerText = tarefas.filter(t => t.data === hoje).length;
+  $("totalConcluidas").innerText = concluidas;
 
-  if ($("totalAnotacoes")) {
-    $("totalAnotacoes").innerText = notas.length;
-  }
+  $("totalEscola").innerText = tarefas.filter(t => t.categoria === "Escola").length;
+  $("totalPave").innerText = tarefas.filter(t => t.categoria === "PAVE").length;
+  $("totalEnem").innerText = tarefas.filter(t => t.categoria === "ENEM").length;
 
-  if ($("tarefasHoje")) {
-    $("tarefasHoje").innerText = tarefas.filter(tarefa => tarefa.data === hoje).length;
-  }
-
-  if ($("totalConcluidas")) {
-    $("totalConcluidas").innerText = concluidas;
-  }
-
-  if ($("totalEscola")) {
-    $("totalEscola").innerText = tarefas.filter(tarefa => tarefa.categoria === "Escola").length;
-  }
-
-  if ($("totalPave")) {
-    $("totalPave").innerText = tarefas.filter(tarefa => tarefa.categoria === "PAVE").length;
-  }
-
-  if ($("totalEnem")) {
-    $("totalEnem").innerText = tarefas.filter(tarefa => tarefa.categoria === "ENEM").length;
-  }
-
-  if ($("percentualProgresso")) {
-    $("percentualProgresso").innerText = `${progresso}%`;
-  }
-
-  if ($("barraProgresso")) {
-    $("barraProgresso").style.width = `${progresso}%`;
-  }
+  $("percentualProgresso").innerText = `${progresso}%`;
+  $("barraProgresso").style.width = `${progresso}%`;
 }
 
 function renderTudo() {
@@ -494,134 +333,19 @@ function renderTudo() {
   renderResumo();
 }
 
-/* =========================
-   ASSISTENTE IA SIMPLES
-========================= */
-
 function perguntarIA() {
-  const prompt = $("promptIA")?.value.trim();
-  const resposta = $("respostaIA");
-
-  if (!resposta) return;
+  const prompt = $("promptIA").value.trim();
 
   if (!prompt) {
-    resposta.innerText = "Digite uma pergunta primeiro.";
+    $("respostaIA").innerText = "Digite uma pergunta primeiro.";
     return;
   }
 
-  resposta.innerText =
-    "Área de IA preparada. Para funcionar com ChatGPT real, será necessário conectar um backend.\n\n" +
-    "Pergunta enviada:\n" +
+  $("respostaIA").innerText =
+    "Área de IA preparada. Para funcionar com ChatGPT real, será necessário conectar um backend.\\n\\n" +
+    "Pergunta enviada:\\n" +
     prompt;
 }
-
-/* =========================
-   EVENTOS
-========================= */
-
-function configurarEventos() {
-  document.querySelectorAll(".nav-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      mudarPagina(btn.dataset.page);
-    });
-  });
-
-  if ($("modalTarefa")) {
-    $("modalTarefa").addEventListener("click", (event) => {
-      if (event.target.id === "modalTarefa") {
-        fecharModalTarefa();
-      }
-    });
-  }
-
-  if ($("formTarefa")) {
-    $("formTarefa").addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      const idAtual = $("tarefaId").value;
-
-      const tarefaAntiga = tarefas.find(t => String(t.id) === String(idAtual));
-
-      const tarefa = {
-        id: idAtual ? String(idAtual) : String(Date.now()),
-        titulo: $("tarefaTitulo").value.trim(),
-        materia: $("tarefaMateria").value,
-        categoria: $("tarefaCategoria").value,
-        tipo: $("tarefaTipo").value,
-        status: $("tarefaStatus").value,
-        data: $("tarefaData").value,
-        descricao: $("tarefaDescricao").value.trim(),
-        criadoEm: tarefaAntiga?.criadoEm || new Date().toISOString(),
-        atualizadoEm: new Date().toISOString()
-      };
-
-      if (!tarefa.titulo || !tarefa.data) {
-        alert("Preencha o título e a data da tarefa.");
-        return;
-      }
-
-      if (idAtual) {
-        tarefas = tarefas.map(item =>
-          String(item.id) === String(idAtual) ? tarefa : item
-        );
-      } else {
-        tarefas.push(tarefa);
-      }
-
-      salvarLocal();
-      await salvarTarefaNuvem(tarefa);
-
-      fecharModalTarefa();
-      renderTudo();
-    });
-  }
-
-  if ($("formNota")) {
-    $("formNota").addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      const titulo = $("notaTitulo").value.trim();
-      const texto = $("notaTexto").value.trim();
-
-      if (!titulo || !texto) {
-        alert("Preencha o título e a anotação.");
-        return;
-      }
-
-      const nota = {
-        id: String(Date.now()),
-        titulo,
-        texto,
-        data: new Date().toLocaleDateString("pt-BR"),
-        criadoEm: new Date().toISOString()
-      };
-
-      notas.unshift(nota);
-
-      salvarLocal();
-      await salvarNotaNuvem(nota);
-
-      $("formNota").reset();
-      renderTudo();
-    });
-  }
-
-  ["filtroCategoria", "filtroStatus", "filtroMateria"].forEach(id => {
-    const campo = $(id);
-
-    if (campo) {
-      campo.addEventListener("change", renderTarefas);
-    }
-  });
-
-  if ($("buscaTarefa")) {
-    $("buscaTarefa").addEventListener("input", renderTarefas);
-  }
-}
-
-/* =========================
-   FUNÇÕES AUXILIARES
-========================= */
 
 function classeStatus(status) {
   if (status === "Concluído") return "badge ok";
@@ -632,20 +356,10 @@ function classeStatus(status) {
 function formatarData(data) {
   if (!data) return "";
 
-  const partes = String(data).split("-");
+  const partes = data.split("-");
   if (partes.length !== 3) return data;
 
   return `${partes[2]}/${partes[1]}/${partes[0]}`;
-}
-
-function dataHojeLocal() {
-  const hoje = new Date();
-
-  const ano = hoje.getFullYear();
-  const mes = String(hoje.getMonth() + 1).padStart(2, "0");
-  const dia = String(hoje.getDate()).padStart(2, "0");
-
-  return `${ano}-${mes}-${dia}`;
 }
 
 function limpar(valor) {
@@ -657,39 +371,15 @@ function limpar(valor) {
     .replaceAll("'", "&#039;");
 }
 
-/* =========================
-   INICIALIZAÇÃO DO APP
-========================= */
-
-async function iniciarApp() {
-  carregarLocal();
-
-  preencherMaterias();
-  preencherFiltros();
-  configurarEventos();
-
-  renderTudo();
-
-  await iniciarFirebase();
-  await carregarFirebase();
-
-  renderTudo();
-}
-
-/*
-  Como o app.js agora roda como type="module",
-  as funções chamadas pelo onclick do HTML precisam ficar no window.
-*/
-
+/* deixa as funções acessíveis para os botões criados no HTML */
 window.abrirModalTarefa = abrirModalTarefa;
 window.fecharModalTarefa = fecharModalTarefa;
 window.alternarStatus = alternarStatus;
 window.excluirTarefa = excluirTarefa;
 window.excluirNota = excluirNota;
 window.perguntarIA = perguntarIA;
+window.renderTudo = renderTudo;
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", iniciarApp);
-} else {
-  iniciarApp();
-}
+preencherMaterias();
+preencherFiltros();
+renderTudo();
