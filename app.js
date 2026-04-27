@@ -281,9 +281,9 @@ function cardTarefa(tarefa) {
       </div>
 
       <div class="actions">
-        <button type="button" class="done" onclick="alternarStatus(${tarefa.id})">Status</button>
-        <button type="button" class="edit" onclick="abrirModalTarefa(${tarefa.id})">Editar</button>
-        <button type="button" class="delete" onclick="excluirTarefa(${tarefa.id})">Excluir</button>
+        <button type="button" class="done" data-action="status" data-id="${tarefa.id}">Status</button>
+        <button type="button" class="edit" data-action="editar" data-id="${tarefa.id}">Editar</button>
+        <button type="button" class="delete" data-action="excluir" data-id="${tarefa.id}">Excluir</button>
       </div>
     </article>
   `;
@@ -383,3 +383,22 @@ window.renderTudo = renderTudo;
 preencherMaterias();
 preencherFiltros();
 renderTudo();
+document.addEventListener("click", function(event) {
+  const botao = event.target.closest("button[data-action]");
+  if (!botao) return;
+
+  const id = Number(botao.dataset.id);
+  const action = botao.dataset.action;
+
+  if (action === "status") {
+    alternarStatus(id);
+  }
+
+  if (action === "editar") {
+    abrirModalTarefa(id);
+  }
+
+  if (action === "excluir") {
+    excluirTarefa(id);
+  }
+});
