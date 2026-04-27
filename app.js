@@ -45,19 +45,26 @@ function preencherMaterias() {
 }
 
 function preencherFiltros() {
-  $("filtroCategoria").innerHTML = `
-    <option value="">Todas as categorias</option>
-    <option>Escola</option>
-    <option>PAVE</option>
-    <option>ENEM</option>
-  `;
+  const filtroCategoria = $("filtroCategoria");
+  const filtroStatus = $("filtroStatus");
 
-  $("filtroStatus").innerHTML = `
-    <option value="">Todos os status</option>
-    <option>Pendente</option>
-    <option>Fazendo</option>
-    <option>Concluído</option>
-  `;
+  if (filtroCategoria) {
+    filtroCategoria.innerHTML = `
+      <option value="">Todas as categorias</option>
+      <option>Escola</option>
+      <option>PAVE</option>
+      <option>ENEM</option>
+    `;
+  }
+
+  if (filtroStatus) {
+    filtroStatus.innerHTML = `
+      <option value="">Todos os status</option>
+      <option>Pendente</option>
+      <option>Fazendo</option>
+      <option>Concluído</option>
+    `;
+  }
 }
 
 function mudarPagina(pagina) {
@@ -79,7 +86,9 @@ function mudarPagina(pagina) {
     ia: "Assistente IA"
   };
 
-  $("pageTitle").innerText = titulos[pagina] || "StudyFlow";
+  if ($("pageTitle")) {
+    $("pageTitle").innerText = titulos[pagina] || "StudyFlow";
+  }
 }
 
 document.querySelectorAll(".nav-btn").forEach(btn => {
@@ -89,6 +98,8 @@ document.querySelectorAll(".nav-btn").forEach(btn => {
 function abrirModalTarefa(id = null) {
   const modal = $("modalTarefa");
   const form = $("formTarefa");
+
+  if (!modal || !form) return;
 
   modal.classList.add("active");
   modal.setAttribute("aria-hidden", "false");
@@ -115,72 +126,90 @@ function abrirModalTarefa(id = null) {
 }
 
 function fecharModalTarefa() {
-  $("modalTarefa").classList.remove("active");
-  $("modalTarefa").setAttribute("aria-hidden", "true");
-  $("formTarefa").reset();
+  const modal = $("modalTarefa");
+  const form = $("formTarefa");
+
+  if (modal) {
+    modal.classList.remove("active");
+    modal.setAttribute("aria-hidden", "true");
+  }
+
+  if (form) form.reset();
 }
 
-$("modalTarefa").addEventListener("click", (event) => {
-  if (event.target.id === "modalTarefa") {
-    fecharModalTarefa();
-  }
-});
-
-$("formTarefa").addEventListener("submit", (event) => {
-  event.preventDefault();
-
-  const id = $("tarefaId").value;
-
-  const tarefa = {
-    id: id ? Number(id) : Date.now(),
-    titulo: $("tarefaTitulo").value.trim(),
-    materia: $("tarefaMateria").value,
-    categoria: $("tarefaCategoria").value,
-    tipo: $("tarefaTipo").value,
-    status: $("tarefaStatus").value,
-    data: $("tarefaData").value,
-    descricao: $("tarefaDescricao").value.trim(),
-    criadoEm: new Date().toISOString()
-  };
-
-  if (!tarefa.titulo || !tarefa.data) {
-    alert("Preencha o título e a data da tarefa.");
-    return;
-  }
-
-  if (id) {
-    tarefas = tarefas.map(item => Number(item.id) === Number(id) ? tarefa : item);
-  } else {
-    tarefas.push(tarefa);
-  }
-
-  salvarLocal();
-  fecharModalTarefa();
-  renderTudo();
-});
-
-$("formNota").addEventListener("submit", (event) => {
-  event.preventDefault();
-
-  const titulo = $("notaTitulo").value.trim();
-  const texto = $("notaTexto").value.trim();
-
-  if (!titulo || !texto) {
-    alert("Preencha o título e a anotação.");
-    return;
-  }
-
-  notas.unshift({
-    id: Date.now(),
-    titulo,
-    texto,
-    data: new Date().toLocaleDateString("pt-BR")
+const modalTarefa = $("modalTarefa");
+if (modalTarefa) {
+  modalTarefa.addEventListener("click", (event) => {
+    if (event.target.id === "modalTarefa") {
+      fecharModalTarefa();
+    }
   });
+}
 
-  salvarLocal();
-  $("formNota").reset();
-  renderTudo();
-});
+const formTarefa = $("formTarefa");
+if (formTarefa) {
+  formTarefa.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const id = $("tarefaId").value;
+
+    const tarefa = {
+      id: id ? Number(id) : Date.now(),
+      titulo: $("tarefaTitulo").value.trim(),
+      materia: $("tarefaMateria").value,
+      categoria: $("tarefaCategoria").value,
+      tipo: $("tarefaTipo").value,
+      status: $("tarefaStatus").value,
+      data: $("tarefaData").value,
+      descricao: $("tarefaDescricao").value.trim(),
+      criadoEm: new Date().toISOString()
+    };
+
+    if (!tarefa.titulo || !tarefa.data) {
+      alert("Preencha o título e a data da tarefa.");
+      return;
+    }
+
+    if (id) {
+      tarefas = tarefas.map(item =>
+        Number(item.id) === Number(id) ? tarefa : item
+      );
+    } else {
+      tarefas.push(tarefa);
+    }
+
+    salvarLocal();
+    fecharModalTarefa();
+    renderTudo();
+  });
+}
+
+const formNota = $("formNota");
+if (formNota) {
+  formNota.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const titulo = $("notaTitulo").value.trim();
+    const texto = $("notaTexto").value.trim();
+
+    if (!titulo || !texto) {
+      alert("Preencha o título e a anotação.");
+      return;
+    }
+
+    notas.unshift({
+      id: Date.now(),
+      titulo,
+      texto,
+      data: new Date().toLocaleDateString("pt-BR"),
+      criadoEm: new Date().toISOString()
+    });
+
+    salvarLocal();
+    formNota.reset();
+    renderTudo();
+  });
+}
 
 function alternarStatus(id) {
   tarefas = tarefas.map(tarefa => {
@@ -188,13 +217,9 @@ function alternarStatus(id) {
 
     let novoStatus = "Pendente";
 
-    if (tarefa.status === "Pendente") {
-      novoStatus = "Fazendo";
-    } else if (tarefa.status === "Fazendo") {
-      novoStatus = "Concluído";
-    } else {
-      novoStatus = "Pendente";
-    }
+    if (tarefa.status === "Pendente") novoStatus = "Fazendo";
+    else if (tarefa.status === "Fazendo") novoStatus = "Concluído";
+    else novoStatus = "Pendente";
 
     return {
       ...tarefa,
@@ -210,7 +235,6 @@ function excluirTarefa(id) {
   if (!confirm("Deseja excluir esta tarefa?")) return;
 
   tarefas = tarefas.filter(tarefa => Number(tarefa.id) !== Number(id));
-
   salvarLocal();
   renderTudo();
 }
@@ -219,7 +243,6 @@ function excluirNota(id) {
   if (!confirm("Deseja excluir esta anotação?")) return;
 
   notas = notas.filter(nota => Number(nota.id) !== Number(id));
-
   salvarLocal();
   renderTudo();
 }
@@ -230,10 +253,10 @@ function renderTarefas() {
 
   let lista = [...tarefas];
 
-  const categoria = $("filtroCategoria").value;
-  const status = $("filtroStatus").value;
-  const materia = $("filtroMateria").value;
-  const busca = $("buscaTarefa").value.toLowerCase();
+  const categoria = $("filtroCategoria")?.value || "";
+  const status = $("filtroStatus")?.value || "";
+  const materia = $("filtroMateria")?.value || "";
+  const busca = $("buscaTarefa")?.value.toLowerCase() || "";
 
   if (categoria) lista = lista.filter(t => t.categoria === categoria);
   if (status) lista = lista.filter(t => t.status === status);
@@ -241,27 +264,31 @@ function renderTarefas() {
 
   if (busca) {
     lista = lista.filter(t =>
-      t.titulo.toLowerCase().includes(busca) ||
-      t.materia.toLowerCase().includes(busca) ||
-      t.categoria.toLowerCase().includes(busca) ||
+      (t.titulo || "").toLowerCase().includes(busca) ||
+      (t.materia || "").toLowerCase().includes(busca) ||
+      (t.categoria || "").toLowerCase().includes(busca) ||
       (t.descricao || "").toLowerCase().includes(busca)
     );
   }
 
   lista.sort((a, b) => new Date(a.data) - new Date(b.data));
 
-  listaTarefas.innerHTML = lista.length
-    ? lista.map(cardTarefa).join("")
-    : `<div class="item">Nenhuma tarefa encontrada.</div>`;
+  if (listaTarefas) {
+    listaTarefas.innerHTML = lista.length
+      ? lista.map(cardTarefa).join("")
+      : `<div class="item">Nenhuma tarefa encontrada.</div>`;
+  }
 
   const proximas = tarefas
     .filter(t => t.status !== "Concluído")
     .sort((a, b) => new Date(a.data) - new Date(b.data))
     .slice(0, 5);
 
-  listaDashboard.innerHTML = proximas.length
-    ? proximas.map(cardTarefa).join("")
-    : `<div class="item">Nenhuma tarefa pendente.</div>`;
+  if (listaDashboard) {
+    listaDashboard.innerHTML = proximas.length
+      ? proximas.map(cardTarefa).join("")
+      : `<div class="item">Nenhuma tarefa pendente.</div>`;
+  }
 }
 
 function cardTarefa(tarefa) {
@@ -291,16 +318,22 @@ function cardTarefa(tarefa) {
 
 function renderNotas() {
   const listaNotas = $("listaNotas");
+  if (!listaNotas) return;
 
   listaNotas.innerHTML = notas.length
     ? notas.map(nota => `
       <article class="note">
         <h4>${limpar(nota.titulo)}</h4>
+
         <div class="badges">
           <span class="badge">${limpar(nota.data)}</span>
         </div>
+
         <p>${limpar(nota.texto)}</p>
-        <button type="button" class="delete" onclick="excluirNota(${nota.id})">Excluir</button>
+
+        <button type="button" class="delete" data-action="excluirNota" data-id="${nota.id}">
+          Excluir
+        </button>
       </article>
     `).join("")
     : `<div class="item">Nenhuma anotação salva.</div>`;
@@ -314,17 +347,17 @@ function renderResumo() {
   const total = tarefas.length;
   const progresso = total ? Math.round((concluidas / total) * 100) : 0;
 
-  $("totalPendentes").innerText = pendentes;
-  $("totalAnotacoes").innerText = notas.length;
-  $("tarefasHoje").innerText = tarefas.filter(t => t.data === hoje).length;
-  $("totalConcluidas").innerText = concluidas;
+  if ($("totalPendentes")) $("totalPendentes").innerText = pendentes;
+  if ($("totalAnotacoes")) $("totalAnotacoes").innerText = notas.length;
+  if ($("tarefasHoje")) $("tarefasHoje").innerText = tarefas.filter(t => t.data === hoje).length;
+  if ($("totalConcluidas")) $("totalConcluidas").innerText = concluidas;
 
-  $("totalEscola").innerText = tarefas.filter(t => t.categoria === "Escola").length;
-  $("totalPave").innerText = tarefas.filter(t => t.categoria === "PAVE").length;
-  $("totalEnem").innerText = tarefas.filter(t => t.categoria === "ENEM").length;
+  if ($("totalEscola")) $("totalEscola").innerText = tarefas.filter(t => t.categoria === "Escola").length;
+  if ($("totalPave")) $("totalPave").innerText = tarefas.filter(t => t.categoria === "PAVE").length;
+  if ($("totalEnem")) $("totalEnem").innerText = tarefas.filter(t => t.categoria === "ENEM").length;
 
-  $("percentualProgresso").innerText = `${progresso}%`;
-  $("barraProgresso").style.width = `${progresso}%`;
+  if ($("percentualProgresso")) $("percentualProgresso").innerText = `${progresso}%`;
+  if ($("barraProgresso")) $("barraProgresso").style.width = `${progresso}%`;
 }
 
 function renderTudo() {
@@ -334,16 +367,19 @@ function renderTudo() {
 }
 
 function perguntarIA() {
-  const prompt = $("promptIA").value.trim();
+  const prompt = $("promptIA")?.value.trim();
+  const resposta = $("respostaIA");
+
+  if (!resposta) return;
 
   if (!prompt) {
-    $("respostaIA").innerText = "Digite uma pergunta primeiro.";
+    resposta.innerText = "Digite uma pergunta primeiro.";
     return;
   }
 
-  $("respostaIA").innerText =
-    "Área de IA preparada. Para funcionar com ChatGPT real, será necessário conectar um backend.\\n\\n" +
-    "Pergunta enviada:\\n" +
+  resposta.innerText =
+    "Área de IA preparada. Para funcionar com ChatGPT real, será necessário conectar um backend.\n\n" +
+    "Pergunta enviada:\n" +
     prompt;
 }
 
@@ -371,18 +407,7 @@ function limpar(valor) {
     .replaceAll("'", "&#039;");
 }
 
-/* deixa as funções acessíveis para os botões criados no HTML */
-window.abrirModalTarefa = abrirModalTarefa;
-window.fecharModalTarefa = fecharModalTarefa;
-window.alternarStatus = alternarStatus;
-window.excluirTarefa = excluirTarefa;
-window.excluirNota = excluirNota;
-window.perguntarIA = perguntarIA;
-window.renderTudo = renderTudo;
-
-preencherMaterias();
-preencherFiltros();
-renderTudo();
+/* botões dinâmicos */
 document.addEventListener("click", function(event) {
   const botao = event.target.closest("button[data-action]");
   if (!botao) return;
@@ -390,15 +415,18 @@ document.addEventListener("click", function(event) {
   const id = Number(botao.dataset.id);
   const action = botao.dataset.action;
 
-  if (action === "status") {
-    alternarStatus(id);
-  }
-
-  if (action === "editar") {
-    abrirModalTarefa(id);
-  }
-
-  if (action === "excluir") {
-    excluirTarefa(id);
-  }
+  if (action === "status") alternarStatus(id);
+  if (action === "editar") abrirModalTarefa(id);
+  if (action === "excluir") excluirTarefa(id);
+  if (action === "excluirNota") excluirNota(id);
 });
+
+/* funções globais usadas pelo HTML */
+window.abrirModalTarefa = abrirModalTarefa;
+window.fecharModalTarefa = fecharModalTarefa;
+window.perguntarIA = perguntarIA;
+window.renderTudo = renderTudo;
+
+preencherMaterias();
+preencherFiltros();
+renderTudo();
