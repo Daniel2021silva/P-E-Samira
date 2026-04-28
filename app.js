@@ -91,10 +91,6 @@ function mudarPagina(pagina) {
   }
 }
 
-document.querySelectorAll(".nav-btn").forEach(btn => {
-  btn.addEventListener("click", () => mudarPagina(btn.dataset.page));
-});
-
 function abrirModalTarefa(id = null) {
   const modal = $("modalTarefa");
   const form = $("formTarefa");
@@ -137,78 +133,63 @@ function fecharModalTarefa() {
   if (form) form.reset();
 }
 
-const modalTarefa = $("modalTarefa");
-if (modalTarefa) {
-  modalTarefa.addEventListener("click", (event) => {
-    if (event.target.id === "modalTarefa") {
-      fecharModalTarefa();
-    }
-  });
+function salvarTarefa(event) {
+  event.preventDefault();
+
+  const id = $("tarefaId")?.value || "";
+
+  const tarefa = {
+    id: id ? Number(id) : Date.now(),
+    titulo: $("tarefaTitulo").value.trim(),
+    materia: $("tarefaMateria").value,
+    categoria: $("tarefaCategoria").value,
+    tipo: $("tarefaTipo").value,
+    status: $("tarefaStatus").value,
+    data: $("tarefaData").value,
+    descricao: $("tarefaDescricao").value.trim(),
+    criadoEm: new Date().toISOString()
+  };
+
+  if (!tarefa.titulo || !tarefa.data) {
+    alert("Preencha o título e a data da tarefa.");
+    return;
+  }
+
+  if (id) {
+    tarefas = tarefas.map(item =>
+      Number(item.id) === Number(id) ? tarefa : item
+    );
+  } else {
+    tarefas.push(tarefa);
+  }
+
+  salvarLocal();
+  fecharModalTarefa();
+  renderTudo();
 }
 
-const formTarefa = $("formTarefa");
-if (formTarefa) {
-  formTarefa.addEventListener("submit", (event) => {
-    event.preventDefault();
+function salvarNota(event) {
+  event.preventDefault();
 
-    const id = $("tarefaId").value;
+  const titulo = $("notaTitulo").value.trim();
+  const texto = $("notaTexto").value.trim();
 
-    const tarefa = {
-      id: id ? Number(id) : Date.now(),
-      titulo: $("tarefaTitulo").value.trim(),
-      materia: $("tarefaMateria").value,
-      categoria: $("tarefaCategoria").value,
-      tipo: $("tarefaTipo").value,
-      status: $("tarefaStatus").value,
-      data: $("tarefaData").value,
-      descricao: $("tarefaDescricao").value.trim(),
-      criadoEm: new Date().toISOString()
-    };
+  if (!titulo || !texto) {
+    alert("Preencha o título e a anotação.");
+    return;
+  }
 
-    if (!tarefa.titulo || !tarefa.data) {
-      alert("Preencha o título e a data da tarefa.");
-      return;
-    }
-
-    if (id) {
-      tarefas = tarefas.map(item =>
-        Number(item.id) === Number(id) ? tarefa : item
-      );
-    } else {
-      tarefas.push(tarefa);
-    }
-
-    salvarLocal();
-    fecharModalTarefa();
-    renderTudo();
+  notas.unshift({
+    id: Date.now(),
+    titulo,
+    texto,
+    data: new Date().toLocaleDateString("pt-BR"),
+    criadoEm: new Date().toISOString()
   });
-}
 
-const formNota = $("formNota");
-if (formNota) {
-  formNota.addEventListener("submit", (event) => {
-    event.preventDefault();
-
-    const titulo = $("notaTitulo").value.trim();
-    const texto = $("notaTexto").value.trim();
-
-    if (!titulo || !texto) {
-      alert("Preencha o título e a anotação.");
-      return;
-    }
-
-    notas.unshift({
-      id: Date.now(),
-      titulo,
-      texto,
-      data: new Date().toLocaleDateString("pt-BR"),
-      criadoEm: new Date().toISOString()
-    });
-
-    salvarLocal();
-    formNota.reset();
-    renderTudo();
-  });
+  salvarLocal();
+  $("formNota").reset();
+  renderTudo();
 }
 
 function alternarStatus(id) {
@@ -407,8 +388,38 @@ function limpar(valor) {
     .replaceAll("'", "&#039;");
 }
 
+/* eventos principais */
+document.addEventListener("DOMContentLoaded", function () {
+  preencherMaterias();
+  preencherFiltros();
+  renderTudo();
+
+  document.querySelectorAll(".nav-btn").forEach(btn => {
+    btn.addEventListener("click", () => mudarPagina(btn.dataset.page));
+  });
+
+  const modalTarefa = $("modalTarefa");
+  if (modalTarefa) {
+    modalTarefa.addEventListener("click", function (event) {
+      if (event.target.id === "modalTarefa") {
+        fecharModalTarefa();
+      }
+    });
+  }
+
+  const formTarefa = $("formTarefa");
+  if (formTarefa) {
+    formTarefa.addEventListener("submit", salvarTarefa);
+  }
+
+  const formNota = $("formNota");
+  if (formNota) {
+    formNota.addEventListener("submit", salvarNota);
+  }
+});
+
 /* botões dinâmicos */
-document.addEventListener("click", function(event) {
+document.addEventListener("click", function (event) {
   const botao = event.target.closest("button[data-action]");
   if (!botao) return;
 
@@ -426,7 +437,3 @@ window.abrirModalTarefa = abrirModalTarefa;
 window.fecharModalTarefa = fecharModalTarefa;
 window.perguntarIA = perguntarIA;
 window.renderTudo = renderTudo;
-
-preencherMaterias();
-preencherFiltros();
-renderTudo();
